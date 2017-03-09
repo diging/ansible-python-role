@@ -1,0 +1,32 @@
+- name: make sure yum is up to date
+  yum:
+    name: '*'
+    state: latest
+  become: yes
+- name: make sure gcc is installed
+  yum:
+    name: gcc
+    state: present
+  become: yes
+- name: download and unpack Python 2.7.11
+  unarchive:
+    src: https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tgz
+    dest: /tmp
+    remote_src: True
+    creates: /tmp/Python-2.7.11
+- name: configure Python build
+  command: ./configure --prefix=/opt/
+  args:
+    chdir: /tmp/Python-2.7.11
+    creates: /tmp/Python-2.7.11/Makefile
+- name: build Python from source
+  command: make
+  args:
+    chdir: /tmp/Python-2.7.11
+    creates: /tmp/Python-2.7.11/libpython2.7.a
+- name: install Python (as root)
+  command: make install
+  args:
+    chdir: /tmp/Python-2.7.11
+    creates: /opt/bin/python2.7
+  become: yes
